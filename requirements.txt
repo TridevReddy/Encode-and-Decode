@@ -1,0 +1,2 @@
+pycryptodome==3.14.1
+pycryptodomex==3.14.1
