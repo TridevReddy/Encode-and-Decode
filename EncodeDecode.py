@@ -64,6 +64,7 @@ if args.mode.lower() == "encode":
         print("base64")
         print("base32")
         print("Rot13")
+        print("Fernet Symmetric Encryption")
         option = str(input("Type here --> "))
 
     #For Base64
@@ -145,6 +146,7 @@ if args.mode.lower() == "decode":
         print("base64")
         print("base32")
         print("Rot13")
+        print("Fernet Symmetric Encryption")
         option = str(input("Type here --> "))
     #For Base64
     if option.lower() == "base64":
