@@ -6,6 +6,7 @@ from Crypto.Cipher import AES
 from Crypto.Cipher import DES
 from secrets import token_bytes
 from Cryptodome.Random import get_random_bytes
+from cryptography.fernet import Fernet
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-m", "--mode", help="Mention encode or decode")
@@ -59,6 +60,7 @@ if args.mode.lower() == "encode":
     if option == "99":
         print("AES")
         print("Single DES")
+        print("Fernet")
         print("base64")
         print("base32")
         print("Rot13")
@@ -71,7 +73,6 @@ if args.mode.lower() == "encode":
         base64_bytes = base64.b64encode(string_bytes)
         base64_data = base64_bytes.decode("ascii")
         print("The encoded data is: {}".format(base64_data))
-    
     #For Base32
     if option.lower() == "base32":
         print("You selected to encode in Base32 format")
@@ -121,6 +122,16 @@ if args.mode.lower() == "encode":
         else:
             print("Enter only Y or N")
             sys.exit(0)
+        
+    #For Fernet
+    if option.lower() == "fernet":
+        print("You selected to encode using fernet")
+        fernet_key = Fernet.generate_key()
+        f = Fernet(fernet_key)
+        print("Key: {}".format(fernet_key))
+        fernet_bytes = args.text.encode()
+        encoded_fernet = f.encrypt(fernet_bytes)
+        print("The encoded data is: {}".format(encoded_fernet))
         
 if args.mode.lower() == "decode":
     if not args.text:
@@ -176,3 +187,12 @@ if args.mode.lower() == "decode":
         cipher_text3 = args.text.encode().decode('unicode_escape').encode("raw_unicode_escape")
         tag3 = input("Enter the tag: ").encode().decode('unicode_escape').encode("raw_unicode_escape")
         print(DES_decrypt(key3, nonce3, cipher_text3, tag3))
+    
+    if option.lower() == "fernet":
+        print("You selected to decode using fernet")
+        decode_key = input("Enter the key: ").encode()
+        print(decode_key)
+        f = Fernet(decode_key)
+        fernet_bytes = args.text.encode()
+        decoded_fernet = f.decrypt(fernet_bytes)
+        print("The encoded data is: {}".format(decoded_fernet.decode()))
