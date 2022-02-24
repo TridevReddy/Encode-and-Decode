@@ -2,7 +2,6 @@ import base64
 import argparse
 import hashlib
 import sys
-import codecs
 from Crypto.Cipher import AES
 from Crypto.Cipher import DES, DES3
 from secrets import token_bytes
