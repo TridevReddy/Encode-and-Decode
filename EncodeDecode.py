@@ -2,8 +2,9 @@ import base64
 import argparse
 import hashlib
 import sys
+import codecs
 from Crypto.Cipher import AES
-from Crypto.Cipher import DES
+from Crypto.Cipher import DES, DES3
 from secrets import token_bytes
 from Cryptodome.Random import get_random_bytes
 from cryptography.fernet import Fernet
@@ -50,6 +51,18 @@ def DES_decrypt(key, nonce, cipher_text, tag):
     except:
         return False
 
+def DES3_encrypt(des_enc_key, message):
+    des3_enc_cipher = DES3.new(des_enc_key, DES3.MODE_EAX)
+    nonce = des3_enc_cipher.nonce
+    enc_3des = des3_enc_cipher.encrypt(message.encode("ascii"))
+    #print("Encrypted: {}".format(enc_3des))
+    return nonce, enc_3des
+
+def DES3_decrypt(des_enc_key, nonce, ciphertext):
+    cipher = DES3.new(des_enc_key, DES3.MODE_EAX, nonce)
+    dec_3des = cipher.decrypt(ciphertext)
+    return dec_3des.decode('ascii')
+
 if args.mode.lower() == "encode":
     if not args.text:
         print("Enter the text to encode")
@@ -60,11 +73,11 @@ if args.mode.lower() == "encode":
     if option == "99":
         print("AES")
         print("Single DES")
+        print("Triple DES")
         print("Fernet")
         print("base64")
         print("base32")
         print("Rot13")
-        print("Fernet Symmetric Encryption")
         option = str(input("Type here --> "))
 
     #For Base64
@@ -94,10 +107,12 @@ if args.mode.lower() == "encode":
         password = str(input("Enter a password. Remember that this password is used for decryption also."))
         text =args.text
         enc = aes_encrypt(password, text)
+        dec_aes = aes_decrypt(enc, password)
         print(enc)
         yn = str(input("Do you want to decrypt the same again?? (Y/N)"))
         if yn.upper() == "Y":
-            print(aes_decrypt(enc, password))
+            print(dec_aes.decode())
+            sys.exit(0)
         elif yn.upper() == "N":
             print("Ok then....Thanks for using.... Bye")
             sys.exit(0)
@@ -116,7 +131,9 @@ if args.mode.lower() == "encode":
         print("Tag: {}".format(tag))
         yn2 = str(input("Do you want to decrypt the same again?? (Y/N)"))
         if yn2.upper() == "Y":
-            print(DES_decrypt(key, nonce, cipher_text, tag))
+            dec_single_des = DES_decrypt(key, nonce, cipher_text, tag)
+            print(dec_single_des)
+            sys.exit()
         elif yn2.upper() == "N":
             print("Ok then....Thanks for using.... Bye")
             sys.exit(0)
@@ -133,6 +150,29 @@ if args.mode.lower() == "encode":
         fernet_bytes = args.text.encode()
         encoded_fernet = f.encrypt(fernet_bytes)
         print("The encoded data is: {}".format(encoded_fernet))
+
+    #For Triple DES
+    if option.lower() == "triple des":
+        while True:
+            try:
+                des3_enc_key = DES3.adjust_key_parity(token_bytes(24))
+                print("Key: {}".format(des3_enc_key))
+                break
+            except ValueError:
+                print("Error occured....")
+                pass
+        nonce_des3, aassdd = DES3_encrypt(des3_enc_key, args.text)
+        print("Nonce: {}".format(nonce_des3))
+        print("Data: {}".format(aassdd))
+        yn3 = str(input("Do you want to decrypt the same again?? (Y/N)"))
+        if yn3.upper() == "Y":
+            print(DES3_decrypt(des3_enc_key, nonce_des3, aassdd))
+        elif yn3.upper() == "N":
+            print("Ok then....Thanks for using.... Bye")
+            sys.exit(0)
+        else:
+            print("Enter only Y or N")
+            sys.exit(0)
         
 if args.mode.lower() == "decode":
     if not args.text:
@@ -146,7 +186,6 @@ if args.mode.lower() == "decode":
         print("base64")
         print("base32")
         print("Rot13")
-        print("Fernet Symmetric Encryption")
         option = str(input("Type here --> "))
     #For Base64
     if option.lower() == "base64":
@@ -179,7 +218,9 @@ if args.mode.lower() == "decode":
         new_dict['cipher_text'] = cipher_text2
         new_dict['nonce'] = nonce2
         new_dict['tag'] = tag2
-        print(aes_decrypt(new_dict, password))
+        aes_dec = aes_decrypt(new_dict, password)
+        print(aes_dec.decode())
+        sys.exit(0)
 
     #For Single DES
     if option.lower() == "single des":
@@ -189,7 +230,16 @@ if args.mode.lower() == "decode":
         cipher_text3 = args.text.encode().decode('unicode_escape').encode("raw_unicode_escape")
         tag3 = input("Enter the tag: ").encode().decode('unicode_escape').encode("raw_unicode_escape")
         print(DES_decrypt(key3, nonce3, cipher_text3, tag3))
+        sys.exit(0)
     
+    #For Triple DES
+    if option.lower() == "triple des":
+        dec_key_des3 = input("Enter key: ").encode().decode('unicode_escape').encode("raw_unicode_escape")
+        dec_nonce_des3 = input("Enter nonce: ").encode().decode('unicode_escape').encode("raw_unicode_escape")
+        dec_des3 = DES3_decrypt(dec_key_des3, dec_nonce_des3, args.text.encode().decode('unicode_escape').encode("raw_unicode_escape"))
+        print("Decrypted text: " + dec_des3)
+    
+    #For Fernet
     if option.lower() == "fernet":
         print("You selected to decode using fernet")
         decode_key = input("Enter the key: ").encode()
@@ -198,3 +248,4 @@ if args.mode.lower() == "decode":
         fernet_bytes = args.text.encode()
         decoded_fernet = f.decrypt(fernet_bytes)
         print("The encoded data is: {}".format(decoded_fernet.decode()))
+        sys.exit(0)
