@@ -1,7 +1,7 @@
 # Encode-and-Decode
 **DESCRIPTION**
 
-Using this python script, we can encode and decode the text to different kind of formats like complex encryption techniques like AES, Single DES and few basic encryptions like Base64, Base32, Rot13. Many more encryption techniques are going to be added to the script.
+Using this python script, we can encode and decode the text to different kind of formats like complex encryption techniques like AES, Single DES, Fernet and few basic encryptions like Base64, Base32, Rot13. Many more encryption techniques are going to be added to the script.
 
 **USAGE**
 
